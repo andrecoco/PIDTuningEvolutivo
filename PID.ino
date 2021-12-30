@@ -1,6 +1,5 @@
 /********************************************************
- * PID Basic Example
- * Reading analog input 0 to control analog PWM output 3
+ * PID Controller
  ********************************************************/
 
 #include <PID_v1.h>
