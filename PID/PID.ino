@@ -13,6 +13,8 @@ double Setpoint, Input, Output;
 double Kp = 1, Ki = 1, Kd = 1;
 PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, DIRECT);
 int counter;
+int numero_medidas;
+double initial_temp = 70;
 
 void setup()
 {
@@ -22,23 +24,8 @@ void setup()
   Input = analogRead(PIN_INPUT);
   Setpoint = 90;
   counter = 0;
-  
-  set_pid_tunings();
-  
-  //wait for the lamp to cool down
-  analogWrite(PIN_FAN, 200);
-  while(Input > 70){
-    delay(1000);
-    Input = analogRead(PIN_INPUT);
-    //Serial.print("Esfriando... Temperatura=");
-    //Serial.println(Input);
-  }
-  analogWrite(PIN_FAN, 0);
 
-  //start the fan (disturb)
-  // 50 - 255
-  analogWrite(PIN_FAN, 100);
-  change_fan_speed();
+  setup_PID();
   
   //turn the PID on
   myPID.SetMode(AUTOMATIC);
@@ -49,13 +36,13 @@ void loop()
   Input = analogRead(PIN_INPUT);
   myPID.Compute();
   analogWrite(PIN_OUTPUT, Output); //change lamp pot
-  counter++;
-  if(counter > 30){ //30 ~ 3s
-    counter = 0;
-    change_fan_speed();
-  }
   print_info();
   delay(500);
+  counter++;
+  if(counter >= numero_medidas){
+    setup_PID();
+    counter = 0;
+  }
 }
 
 void print_info(){
@@ -74,7 +61,7 @@ void change_fan_speed(){
   analogWrite(PIN_FAN, random(70, 200));
 }
 
-void set_pid_tunings(){
+void get_arduino_params(){
   bool tuned = false;
   while(!tuned){
     if (Serial.available() > 0) {
@@ -85,7 +72,8 @@ void set_pid_tunings(){
       Kp = String(strtok(data, ",")).toDouble();
       Ki = String(strtok(NULL, ",")).toDouble();
       Kd = String(strtok(NULL, ",")).toDouble();
-      //Serial.print("Kp=");
+      numero_medidas = String(strtok(NULL, ",")).toInt();
+      /*//Serial.print("Kp=");
       Serial.print(",");
       Serial.print(Kp);
       //Serial.print(" Ki=");
@@ -93,9 +81,38 @@ void set_pid_tunings(){
       Serial.print(Ki);
       //Serial.print(" Kd=");
       Serial.print(",");
-      Serial.println(Kd);
+      Serial.println(Kd);*/
       tuned = true;
     }
   }
   myPID.SetTunings(Kp, Ki, Kd);
+}
+
+void setup_PID(){
+  //wait for the lamp to get to 70C if necessary
+  analogWrite(PIN_OUTPUT, 120);
+  while(Input < initial_temp){
+    delay(200);
+    Input = analogRead(PIN_INPUT);
+    //Serial.print("Esquentando... Temperatura=");
+    //Serial.println(Input);
+  }
+  analogWrite(PIN_OUTPUT, 0);
+
+  //wait for the lamp to cool down if necessary
+  analogWrite(PIN_FAN, 200);
+  while(Input > initial_temp){
+    delay(200);
+    Input = analogRead(PIN_INPUT);
+    //Serial.print("Esfriando... Temperatura=");
+    //Serial.println(Input);
+  }
+  analogWrite(PIN_FAN, 0);
+
+  get_arduino_params();
+  
+  //start the fan (disturb)
+  // 50 - 255
+  analogWrite(PIN_FAN, 120);
+  //change_fan_speed();
 }
