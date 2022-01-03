@@ -85,7 +85,7 @@ while(True):
     #LOGS
     if(geracao%100 == 0):
         f = open("logs/" + str(geracao) + ".txt", "w")
-        for indiv in individuos:
+        for individuo in individuos:
             f.write(str(individuo) + "\n")
         f.close()
     
