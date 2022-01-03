@@ -18,13 +18,13 @@ double initial_temp = 70;
 
 void setup()
 {
-  Serial.begin(9600);  
+  Serial.begin(9600);
   
   //initialize the variables
   Input = analogRead(PIN_INPUT);
   Setpoint = 90;
   counter = 0;
-
+  
   setup_PID();
   
   //turn the PID on
@@ -89,7 +89,9 @@ void get_arduino_params(){
 }
 
 void setup_PID(){
-  //wait for the lamp to get to 70C if necessary
+  get_arduino_params();
+  
+  //wait for the lamp to get to initial_temp if necessary
   analogWrite(PIN_OUTPUT, 120);
   while(Input < initial_temp){
     delay(200);
@@ -108,8 +110,6 @@ void setup_PID(){
     //Serial.println(Input);
   }
   analogWrite(PIN_FAN, 0);
-
-  get_arduino_params();
   
   //start the fan (disturb)
   // 50 - 255

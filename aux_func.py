@@ -1,6 +1,6 @@
 import numpy as np
 
-# % de erro da temperatura
+# % de erro medio da temperatura
 def erro_medio(temps, set_point):
     temp_media = np.average(temps)
     return (temp_media - set_point)/set_point
@@ -18,7 +18,7 @@ def iae(temps, set_point):
         erro_absoluto += abs((temp - set_point)/set_point)
     return erro_absoluto
 
-# Numero de vezes em que a temperatura cruzou o setpoint
+# Numero de vezes em que a temperatura cruzou o setpoint (numero de vezes)
 def cruz_setpoint(temps, set_point):
     temps_compensada = np.array(temps) - set_point
     n_cruzamentos = len(np.where(np.diff(np.sign(temps_compensada)))[0])

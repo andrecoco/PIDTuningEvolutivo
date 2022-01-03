@@ -5,8 +5,6 @@ import plot
 import aux_func
 
 def test_tuning(Kp, Ki, Kd, N_MEDIDAS=60):
-    N_MEDIDAS = 60
-
     com = serial.Serial('COM4', 9600, timeout=1) # Setando timeout 1s para a conexao
 
     time.sleep(2) #se nao esperar o write nao funciona
