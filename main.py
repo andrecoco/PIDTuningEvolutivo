@@ -81,12 +81,6 @@ while(True):
         for individuo in individuos[1:]:
             individuo.fitness = controle.test_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)
             #individuo.fitness = test_fitness(individuo)
-
-    #ESPALHAMENTO DE GENES
-    individuos.sort() #coloca o melhor na frente, para nao mata-lo
-
-    for individuo in individuos[1:]:
-        individuo.cruzamento(individuos[0])
     
     #LOGS
     if(geracao%100 == 0):
@@ -94,5 +88,12 @@ while(True):
         for indiv in individuos:
             f.write(str(individuo) + "\n")
         f.close()
+    
+    #ESPALHAMENTO DE GENES
+    individuos.sort() #coloca o melhor na frente, para nao mata-lo
+
+    for individuo in individuos[1:]:
+        individuo.cruzamento(individuos[0])
+    
     
     geracao += 1
