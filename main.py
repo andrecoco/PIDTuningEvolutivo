@@ -1,14 +1,7 @@
 from random import uniform, choices
 import controle
 from dataclasses import dataclass, field
-
-def test_fitness(individuo):
-    return (individuo.Kp + individuo.Ki + individuo.Kd)
-
-def print_bonito(array):
-    for item in array:
-        print(item)
-    print()
+import os
 
 # DEFINES
 ## POPULACAO
@@ -31,11 +24,17 @@ PRECISAO = 2  #CASAS DECIMAIS DE PRECISAO
 N_MEDIDAS = 120
 
 class Individuo:
-    def __init__(self) -> None:
-        self.fitness = None
-        self.Kp = uniform(MIN_KP, MAX_KP)
-        self.Ki = uniform(MIN_KI, MAX_KI)
-        self.Kd = uniform(MIN_KD, MAX_KD)
+    def __init__(self, *args) -> None:
+        if (len(args) == 4):
+            self.fitness = float(args[3])
+            self.Kp = float(args[0])
+            self.Ki = float(args[1])
+            self.Kd = float(args[2])
+        else:
+            self.fitness = None
+            self.Kp = uniform(MIN_KP, MAX_KP)
+            self.Ki = uniform(MIN_KI, MAX_KI)
+            self.Kd = uniform(MIN_KD, MAX_KD)
 
     def __lt__(self, other) -> None:
         return self.fitness < other.fitness
@@ -64,12 +63,48 @@ class Individuo:
         elif(self.Kd > MAX_KD):
             self.Kd = MAX_KD
 
-individuos = []
-for i in range(NUMERO_DE_INDIVIDUOS):
-    novo_indiv = Individuo()
-    individuos.append(novo_indiv)
+def test_fitness(individuo):
+    return (individuo.Kp + individuo.Ki + individuo.Kd)
 
-geracao = 0
+def print_bonito(array):
+    for item in array:
+        print(item)
+    print()
+
+def escreve_log(geracao, individuos):
+    f = open("logs/" + str(geracao) + ".txt", "w")
+    for individuo in individuos:
+        f.write(str(individuo) + "\n")
+    f.close()
+
+def recupera_log():
+    logs = os.listdir('logs/')
+    if(len(logs) > 0):
+        logs.sort()
+        log = open("logs/" + str(logs[-1]), "r")
+        geracao = int(logs[-1][:-4])
+        individuos = []
+        for linha in log:
+            data = linha.rstrip()
+            data = data.split(',')
+            individuos.append(Individuo(data[0], data[1], data[2], data[3]))
+        return individuos, geracao
+    return None, None
+
+def inicializa_populacao():
+    #Verifica se existem logs para continuar de onde parou
+    individuos, geracao = recupera_log()
+
+    #Começa do zero
+    if (individuos is None):
+        individuos = []
+        geracao = 0
+        for i in range(NUMERO_DE_INDIVIDUOS):
+            novo_indiv = Individuo()
+            individuos.append(novo_indiv)
+    return individuos, geracao
+
+individuos, geracao = inicializa_populacao()
 
 while(True):
     if(geracao == 0):
@@ -83,17 +118,13 @@ while(True):
             #individuo.fitness = test_fitness(individuo)
     
     #LOGS
-    if(geracao%100 == 0):
-        f = open("logs/" + str(geracao) + ".txt", "w")
-        for individuo in individuos:
-            f.write(str(individuo) + "\n")
-        f.close()
+    if(geracao%10 == 0):
+        escreve_log(geracao, individuos)
     
     #ESPALHAMENTO DE GENES
     individuos.sort() #coloca o melhor na frente, para nao mata-lo
 
     for individuo in individuos[1:]:
         individuo.cruzamento(individuos[0])
-    
     
     geracao += 1

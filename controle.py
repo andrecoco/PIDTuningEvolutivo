@@ -5,7 +5,7 @@ import plot
 import aux_func
 
 def test_tuning(Kp, Ki, Kd, N_MEDIDAS=60):
-    com = serial.Serial('COM4', 9600, timeout=1) # Setando timeout 1s para a conexao
+    com = serial.Serial('/dev/ttyUSB0', 9600, timeout=1) # Setando timeout 1s para a conexao
 
     time.sleep(2) #se nao esperar o write nao funciona
     data = '{}, {}, {}, {}'.format(Kp, Ki, Kd, N_MEDIDAS)
