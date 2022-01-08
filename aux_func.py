@@ -41,9 +41,16 @@ def reversao_pot(pot):
 
 # quanto menor a nota, melhor
 def nota_tecnica(temps, pot, set_point):
-    return (erro_medio(temps, set_point) + 
-            variabilidade(temps) + 
-            iae(temps, set_point) + 
-            cruz_setpoint(temps, set_point) + 
-            percurso_pot(pot) + 
-            reversao_pot(pot))/6
+    e1 = erro_medio(temps, set_point)
+    e2 = variabilidade(temps)
+    e3 = iae(temps, set_point)
+    e4 = cruz_setpoint(temps, set_point)
+    e5 = percurso_pot(pot)
+    e6 = reversao_pot(pot)
+    #print("{}, {}, {}, {}, {}, {}".format(e1,e2,e3,e4,e5,e6))
+    return (e1 + 
+            e2 + 
+            e3 + 
+            e4 + 
+            e5 + 
+            e6)

@@ -1,19 +1,21 @@
+from random import uniform, gauss
 import serial
 import time
 import numpy as np
 import plot
 import aux_func
+import controle_simul
 
 def test_tuning(Kp, Ki, Kd, N_MEDIDAS=60):
     while(True):
         try:
-            com = serial.Serial('/dev/ttyUSB0', 9600, timeout=1) # Setando timeout 1s para a conexao
+            com = serial.Serial('COM4', 9600, timeout=1) # Setando timeout 1s para a conexao
             break
         except:
             print("Problema ao se conectar com o Arduino!")
             time.sleep(2)
     
-    time.sleep(2) #se nao esperar o write nao funciona
+    time.sleep(5) #se nao esperar o write nao funciona
     data = '{}, {}, {}, {}'.format(Kp, Ki, Kd, N_MEDIDAS)
     com.write(bytearray(data.encode()))
 
@@ -42,8 +44,12 @@ def test_tuning(Kp, Ki, Kd, N_MEDIDAS=60):
     #print(len(temps))
     #print(len(pot))
 
-    #plot.plot_graph(temps, pot, N_MEDIDAS, Kp, Ki, Kd, set_point)
+    plot.plot_graph(temps, pot, N_MEDIDAS, Kp, Ki, Kd, set_point)
 
     nota_tecnica = aux_func.nota_tecnica(temps, pot, set_point)
     print(nota_tecnica)
     return nota_tecnica
+
+def FOPDT_test_tuning(Kp, Ki, Kd, N_SEGUNDOS = 100):
+    temps, pot, set_points = controle_simul.FOPDT_SIMUL(Kp, Ki, Kd, N_SEGUNDOS)
+    return aux_func.nota_tecnica(temps, pot, set_points[-1])
