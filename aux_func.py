@@ -39,6 +39,12 @@ def reversao_pot(pot):
             n_reversoes += 1
     return n_reversoes
 
+def erro_final(temps, set_point):
+    return abs(np.average(temps[-10:]) - set_point)
+
+def gasto_pot(pot):
+    return np.sum(pot)/len(pot)
+
 # quanto menor a nota, melhor
 def nota_tecnica(temps, pot, set_point):
     e1 = erro_medio(temps, set_point)
@@ -47,10 +53,14 @@ def nota_tecnica(temps, pot, set_point):
     e4 = cruz_setpoint(temps, set_point)
     e5 = percurso_pot(pot)
     e6 = reversao_pot(pot)
-    #print("{}, {}, {}, {}, {}, {}".format(e1,e2,e3,e4,e5,e6))
-    return (e1 + 
+    e7 = erro_final(temps, set_point)
+    e8 = gasto_pot(pot)
+    #print("{}, {}, {}, {}, {}, {}, {}, {}".format(e1,e2,e3,e4,e5,e6,e7,e8))
+    return (0*e1 + 
             e2 + 
-            e3 + 
+            2*e3 + 
             e4 + 
             e5 + 
-            e6)
+            0*e6 +
+            10*e7+
+            0.05*e8)

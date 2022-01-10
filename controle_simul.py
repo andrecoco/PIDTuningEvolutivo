@@ -2,11 +2,32 @@ import numpy as np # Acho que da pra substituir
 import matplotlib.pyplot as plt # Plot - nao_precisa
 from scipy.integrate import odeint # EDO - precisa
 import time
+from numba import jit
 
 NOISE = False
 SET_POINT = 80
 OUTPUT_LIMIT = 255
 TEMP_LIMIT = 200
+
+'''t_model = None #substitui self.t
+Gain_model = None #substitui self.Gain
+TimeConstant_model = None #substitui self.TimeConstant
+DeadTime_model = None #substitui self.DeadTime
+Bias_model = None #substitui self.Bias
+CV_model = None #substitui self.CV'''
+
+#@jit
+def calc(PV,ts):
+    #print(t_model, DeadTime_model, Bias_model, Gain_model)
+    #time.sleep(1)
+    #global t_model, DeadTime_model, Bias_model, Gain_model, TimeConstant_model, CV_model
+    if (t_model-DeadTime_model) <= 0:
+        um=0
+    else:
+        um=CV_model[t_model-int(DeadTime_model)]
+
+    dydt = (-(PV-Bias_model) + Gain_model * um)/TimeConstant_model
+    return dydt
 
 def _clamp(value, limits):
     lower, upper = limits
@@ -123,25 +144,13 @@ class PID(object):
 class FOPDTModel(object):
     
     def __init__(self, PlantParams, ModelData):
-                
-        self.t, self.CV= PlantParams
-        self.Gain, self.TimeConstant, self.DeadTime, self.Bias = ModelData
-
-
-    def calc(self,PV,ts):
-                       
-        if (self.t-self.DeadTime) <= 0:
-            um=0
-        else:
-            um=self.CV[self.t-int(self.DeadTime)]
-
-        dydt = (-(PV-self.Bias) + self.Gain * um)/self.TimeConstant
-        return dydt
+        global t_model, Gain_model, TimeConstant_model, DeadTime_model, Bias_model, CV_model
+        t_model, CV_model= PlantParams
+        Gain_model, TimeConstant_model, DeadTime_model, Bias_model = ModelData
 
     def update(self,PV, ts):
-        if(PV is None or ts is None):
-            print(PV, ts)
-        y = odeint(self.calc,PV,ts)   
+
+        y = odeint(calc, PV, ts)
 
         return y[-1]
 
@@ -190,7 +199,8 @@ def refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH = Fal
             CV[i]=pid(PV[i], SP[i])               
             ts = [t[i],t[i+1]]
             #Send step data
-            plant.t,plant.CV=i,CV
+            global t_model
+            t_model,plant.CV=i,CV
             #Find calculated PV
             PV[i+1] = plant.update(PV[i],ts)
             PV[i+1]+=noise[i]
@@ -244,4 +254,4 @@ def FOPDT_SIMUL(ikp, iki, ikd, N_SEGUNDOS, igain = 0.42, itau = 30, ideadtime = 
         noise -= 0.1
     else:
         noise = [0]*size
-    return refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise)
+    return refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH=False)
