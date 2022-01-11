@@ -4,7 +4,7 @@ from scipy.integrate import odeint # EDO - precisa
 import time
 from numba import jit
 
-NOISE = False
+NOISE = True
 SET_POINT = 80
 OUTPUT_LIMIT = 255
 TEMP_LIMIT = 200
@@ -244,14 +244,13 @@ def refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH = Fal
     return PV, CV, SP 
 
 #EntryPoint
-def FOPDT_SIMUL(ikp, iki, ikd, N_SEGUNDOS, igain = 0.42, itau = 30, ideadtime = 0.1):
-    # Some Definitions
-    #Random Noise between -0.5 and 0.5, same set used for each run. Created once at runtime.
+def FOPDT_SIMUL(ikp, iki, ikd, N_SEGUNDOS, igain = 0.42, itau = 50, ideadtime = 0.5):
+    #Random Noise
     size = N_SEGUNDOS
     if(NOISE):
         np.random.seed(0)
-        noise = np.random.rand(size)*2
-        noise -= 0.1
+        noise = np.random.rand(size)
+        noise -= 0.5
     else:
         noise = [0]*size
     return refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH=False)

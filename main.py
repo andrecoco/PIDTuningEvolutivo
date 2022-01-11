@@ -5,6 +5,7 @@ import os
 import time
 import multiprocessing as mp
 import numpy as np
+import plot
 
 # DEFINES
 ## POPULACAO
@@ -12,18 +13,8 @@ NUMERO_DE_INDIVIDUOS_POR_THREAD = 10
 MUTACAO = None #%
 TAXAS_MUTACAO = [0.25, 0.15, 0.05, 1, 5, 10] #%
 CHANCE_MUT = 1
-CHANCE_GENOCIDIO = 0
+TEM_GENOCIDIO = True #TODO
 DELTA = 0.01
-## MUT_MIN 0.01 (0.05%)
-## MUT_MAX 5    (10%)
-## COMECA 0.25%
-## cai para 0.15%
-## cai para 0.05%
-## vai para 0.5%
-## vai para 1%
-## vai para 5%
-## vai para 10%
-## genocidio
 
 ## INDIVIDUO
 MAX_KP = 20
@@ -32,8 +23,8 @@ RANGE_KP = MAX_KP
 MAX_KI = 20
 MIN_KI = 0.1
 RANGE_KI = MAX_KI
-MAX_KD = 0
-MIN_KD = 0
+MAX_KD = 20
+MIN_KD = 0.1
 RANGE_KD = MAX_KD
 PRECISAO = 3  #CASAS DECIMAIS DE PRECISAO
 
@@ -149,8 +140,11 @@ def multithread_fitness(inicio, fim, individuos):
 if __name__ == "__main__":
     
     #for i in range(1):
-    #    print(controle.FOPDT_test_tuning(19.997,2.125, 0, N_SEGUNDOS))  
-    #    print(controle.FOPDT_test_tuning(7.403, 3.126, 0, N_SEGUNDOS))  
+    #    print(controle.FOPDT_test_tuning(10, 0.5, 0.3, N_SEGUNDOS))  
+    #    print(controle.FOPDT_test_tuning(10, 0.5, 0, N_SEGUNDOS))  
+    #exit()
+
+    #plot.plot_fitness([1,2,3,4,5], [1,2,3,3,4])
     #exit()
 
     individuos, geracao = inicializa_populacao()
@@ -165,6 +159,9 @@ if __name__ == "__main__":
     old_best = np.inf
     index_mut = 0
     MUTACAO = TAXAS_MUTACAO[index_mut]
+
+    plot_fit = []
+    plot_avgfit = []
 
     while(True):
         #print("main - ", individuos[0].Kp, individuos[0].Ki, individuos[0].Kd)
@@ -201,6 +198,10 @@ if __name__ == "__main__":
 
         individuos.sort() #coloca o melhor na frente, para nao mata-lo
 
+        #PARA O PLOT
+        plot_fit.append(1/(individuos[0].fitness))
+        plot_avgfit.append(1/(np.average([ind.fitness for ind in individuos])))
+
         #LOGS
         if(geracao%50 == 0):
             fim = time.time()
@@ -213,9 +214,8 @@ if __name__ == "__main__":
             #ve se melhorou nas ultimas 2 geracoes
             if(abs(individuos[0].fitness - old_best) <= DELTA):
                 contador += 1
-                #print("contador++")
             else: #se melhorou
-                #print("melhorou:)")
+                print("melhorou na geracao {} :) - mut = {}%".format(geracao, MUTACAO))
                 contador = 0
                 index_mut = 0
                 MUTACAO = TAXAS_MUTACAO[index_mut]
@@ -230,9 +230,10 @@ if __name__ == "__main__":
                     n_genocidios += 1
                     index_mut = 0
                 MUTACAO = TAXAS_MUTACAO[index_mut]
-            if(n_genocidios >= 5):
+            if(n_genocidios >= 2):
                 #print("cabo")
                 break
+                #pass
             old_best = individuos[0].fitness
 
         #ESPALHAMENTO DE GENES    
@@ -246,5 +247,6 @@ if __name__ == "__main__":
         
         geracao += 1
     
+    plot.plot_fitness(plot_fit, plot_avgfit)
     escreve_log(geracao, individuos)
     exit()
