@@ -1,8 +1,10 @@
+#This code was based on this github repo https://github.com/Destination2Unknown/PythonPID_Simulator 
+# and slightly changed for our purposes.
 import numpy as np # Acho que da pra substituir
 import matplotlib.pyplot as plt # Plot - nao_precisa
 from scipy.integrate import odeint # EDO - precisa
 import time
-from numba import jit
+from numba import njit, jit
 
 NOISE = True
 SET_POINT = 80
@@ -16,17 +18,20 @@ DeadTime_model = None #substitui self.DeadTime
 Bias_model = None #substitui self.Bias
 CV_model = None #substitui self.CV'''
 
-#@jit
-def calc(PV,ts):
+@jit #jit parece mais rapido, testar mais dps
+def calc(PV,ts, t_model_local, CV_model_local):
     #print(t_model, DeadTime_model, Bias_model, Gain_model)
     #time.sleep(1)
     #global t_model, DeadTime_model, Bias_model, Gain_model, TimeConstant_model, CV_model
-    if (t_model-DeadTime_model) <= 0:
+    if (t_model_local-DeadTime_model) <= 0:
         um=0
     else:
-        um=CV_model[t_model-int(DeadTime_model)]
-
+        um=CV_model_local[t_model_local-int(DeadTime_model)]
+    #print(PV, ts, t_model_local, t_model, um)
+    #print(CV_model_local)
+    #print(type(t_model_local))
     dydt = (-(PV-Bias_model) + Gain_model * um)/TimeConstant_model
+    #print(dydt)
     return dydt
 
 def _clamp(value, limits):
@@ -150,7 +155,7 @@ class FOPDTModel(object):
 
     def update(self,PV, ts):
 
-        y = odeint(calc, PV, ts)
+        y = odeint(calc, PV, ts, args = (t_model,CV_model))
 
         return y[-1]
 
@@ -218,18 +223,15 @@ def refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH = Fal
             pterm[i]=pterm[i-1]
             iterm[i]=iterm[i-1]
             dterm[i]=dterm[i-1]
-        #itae = 0 if i < startofstep else itae+(i-startofstep)*abs(SP[i]-PV[i])
             
-    #Display itae value    
-    #itae_text.set(round(itae/len(t),2)) #measure PID performance
+    #Display itae value
     if(PLOT_GRAPH):
         plt.figure()    
         plt.subplot(2, 1, 1) 
         plt.plot(t,SP, color="blue", linewidth=2, label='SP')
         plt.plot(t,CV,color="darkgreen",linewidth=2,label='CV')
         plt.plot(t,PV,color="red",linewidth=2,label='PV')    
-        plt.ylabel('EU')    
-        #plt.suptitle("ITAE: %s" % round(itae/len(t),2))        
+        plt.ylabel('EU')   
         plt.title("Kp:%s   Ki:%s  Kd:%s" % (ikp, iki, ikd),fontsize=10)
         plt.legend(loc='best')
 

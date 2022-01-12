@@ -1,4 +1,4 @@
-from random import uniform, choices
+from random import uniform, choices, choice
 import controle
 from dataclasses import dataclass, field
 import os
@@ -11,10 +11,16 @@ import plot
 ## POPULACAO
 NUMERO_DE_INDIVIDUOS_POR_THREAD = 10
 MUTACAO = None #%
-TAXAS_MUTACAO = [0.25, 0.15, 0.05, 1, 5, 10] #%
+TAXAS_MUTACAO = [0.25, 0.15, 0.05, 1, 5, 10, 20] #%
+#TAXAS_MUTACAO = 6*[0.25] #caso queira mutação fixa
+LIMITE_CONTADOR = 50 #depois de quantas geracoes sem melhoria alterar a taxa de mut
+N_CICLOS_MUT = 4
 CHANCE_MUT = 1
-TEM_GENOCIDIO = True #TODO
+TEM_GENOCIDIO = True
 DELTA = 0.01
+TEM_PREDACAO_RANDOMICA = True
+N_GERACOES_PREDACAO = 10 #numero de geracoes entre predacoes
+N_PREDADOS = 5 #numero de piores individuos que vao ser predados
 
 ## INDIVIDUO
 MAX_KP = 20
@@ -23,15 +29,15 @@ RANGE_KP = MAX_KP
 MAX_KI = 20
 MIN_KI = 0.1
 RANGE_KI = MAX_KI
-MAX_KD = 20
-MIN_KD = 0.1
+MAX_KD = 0
+MIN_KD = 0
 RANGE_KD = MAX_KD
 PRECISAO = 3  #CASAS DECIMAIS DE PRECISAO
 
 ## TESTE
 N_MEDIDAS = 600 #Arduino
 N_SEGUNDOS = 100 #Simulacao
-RECUPERA_LOG = False
+RECUPERA_LOG = True
 
 ## MULTITHREADING
 NUMERO_DE_THREADS = 4
@@ -75,7 +81,7 @@ class Individuo:
             self.Kd = MIN_KD
         elif(self.Kd > MAX_KD):
             self.Kd = MAX_KD
-    
+        
     def reset_genes(self):
         self.fitness = None
         self.Kp = round(uniform(MIN_KP, MAX_KP), PRECISAO)
@@ -124,6 +130,26 @@ def inicializa_populacao():
             individuos.append(novo_indiv)
     return individuos, geracao
 
+def espalha_genes_elitismo(individuos, geracao):
+    if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
+        antes = individuos[0]
+        for individuo in individuos[1:-1*N_PREDADOS]:
+            individuo.cruzamento(individuos[0])
+        depois = individuos[0]
+        if(antes != depois):
+            print("AAAAAAAAAAAAAAAAAAAAAAAA")
+        
+        #predacao randomica
+        for individuo in individuos[-1*N_PREDADOS:]:
+            individuo.reset_genes()
+    else:
+        antes = individuos[0]
+        for individuo in individuos[1:]:
+            individuo.cruzamento(individuos[0])
+        depois = individuos[0]
+        if(antes != depois):
+            print("AAAAAAAAAAAAAAAAAAAAAAAA")
+
 def genocidio(individuos):
     for individuo in individuos[1:]:
         individuo.reset_genes()
@@ -140,7 +166,7 @@ def multithread_fitness(inicio, fim, individuos):
 if __name__ == "__main__":
     
     #for i in range(1):
-    #    print(controle.FOPDT_test_tuning(10, 0.5, 0.3, N_SEGUNDOS))  
+    #    #print(controle.FOPDT_test_tuning(10, 0.5, 0.3, N_SEGUNDOS))  
     #    print(controle.FOPDT_test_tuning(10, 0.5, 0, N_SEGUNDOS))  
     #exit()
 
@@ -155,7 +181,7 @@ if __name__ == "__main__":
 
     # Mutacao variavel
     contador = 0 #pra mutacao variavel
-    n_genocidios = 0
+    ciclos_mutacao = 0
     old_best = np.inf
     index_mut = 0
     MUTACAO = TAXAS_MUTACAO[index_mut]
@@ -166,35 +192,14 @@ if __name__ == "__main__":
     while(True):
         #print("main - ", individuos[0].Kp, individuos[0].Ki, individuos[0].Kd)
         #print(geracao)
-        if(geracao == 0):
-            '''for individuo in individuos:
-                #individuo.fitness = controle.test_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)   
-                #individuo.fitness = test_fitness(individuo)
-                #individuo.fitness = controle.SIMULtest_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)
-                individuo.fitness = controle.FOPDT_test_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)'''
-            
-            args = []
-            for i in range(NUMERO_DE_THREADS):
-                args.append((i*NUMERO_DE_INDIVIDUOS_POR_THREAD, (i+1)*NUMERO_DE_INDIVIDUOS_POR_THREAD, individuos))
-            mp_solutions = p.starmap(multithread_fitness, args)
-            mp_solutions = np.ravel(mp_solutions)
-            for i, fit in enumerate(mp_solutions):
-                individuos[i].fitness = fit
 
-        else:
-            '''for individuo in individuos[1:]:
-                #individuo.fitness = controle.test_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)
-                #individuo.fitness = test_fitness(individuo)
-                #individuo.fitness = controle.SIMULtest_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)
-                individuo.fitness = controle.FOPDT_test_tuning(individuo.Kp, individuo.Ki, individuo.Kd, N_MEDIDAS)'''
-            
-            args = []
-            for i in range(NUMERO_DE_THREADS):
-                args.append((i*NUMERO_DE_INDIVIDUOS_POR_THREAD, (i+1)*NUMERO_DE_INDIVIDUOS_POR_THREAD, individuos))
-            mp_solutions = p.starmap(multithread_fitness, args)
-            mp_solutions = np.ravel(mp_solutions)
-            for i, fit in enumerate(mp_solutions):
-                individuos[i].fitness = fit
+        args = []
+        for i in range(NUMERO_DE_THREADS):
+            args.append((i*NUMERO_DE_INDIVIDUOS_POR_THREAD, (i+1)*NUMERO_DE_INDIVIDUOS_POR_THREAD, individuos))
+        mp_solutions = p.starmap(multithread_fitness, args)
+        mp_solutions = np.ravel(mp_solutions)
+        for i, fit in enumerate(mp_solutions):
+            individuos[i].fitness = fit
 
         individuos.sort() #coloca o melhor na frente, para nao mata-lo
 
@@ -210,40 +215,49 @@ if __name__ == "__main__":
             escreve_log(geracao, individuos)
 
         # MUTACAO DINAMICA
-        if(geracao%2 == 0):
-            #ve se melhorou nas ultimas 2 geracoes
-            if(abs(individuos[0].fitness - old_best) <= DELTA):
-                contador += 1
-            else: #se melhorou
-                print("melhorou na geracao {} :) - mut = {}%".format(geracao, MUTACAO))
-                contador = 0
-                index_mut = 0
-                MUTACAO = TAXAS_MUTACAO[index_mut]
-                n_genocidios = 0
-            
-            if(contador >= 20):
-                contador = 0
-                index_mut += 1
-                if(index_mut >= len(TAXAS_MUTACAO)):
-                    #print("genocidio :(")
+        #ve se melhorou nas ultimas 2 geracoes
+        if(abs(individuos[0].fitness - old_best) <= DELTA):
+            contador += 1
+        else: #se melhorou
+            print("melhorou na geracao {} :) - mut = {}%".format(geracao, MUTACAO))
+            contador = 0
+            index_mut = 0
+            MUTACAO = TAXAS_MUTACAO[index_mut]
+            ciclos_mutacao = 0
+        
+        if(contador >= LIMITE_CONTADOR):
+            contador = 0
+            index_mut += 1
+            if(index_mut >= len(TAXAS_MUTACAO)):
+                if(TEM_GENOCIDIO):
                     genocidio(individuos)
-                    n_genocidios += 1
-                    index_mut = 0
-                MUTACAO = TAXAS_MUTACAO[index_mut]
-            if(n_genocidios >= 2):
-                #print("cabo")
-                break
-                #pass
-            old_best = individuos[0].fitness
+                ciclos_mutacao += 1
+                index_mut = 0
+            MUTACAO = TAXAS_MUTACAO[index_mut]
+        if(ciclos_mutacao > N_CICLOS_MUT):
+            break
+        old_best = individuos[0].fitness
 
-        #ESPALHAMENTO DE GENES    
-        antes = individuos[0]
-        #print(individuos[0])
-        for individuo in individuos[1:]:
-            individuo.cruzamento(individuos[0])
-        depois = individuos[0]
-        if(antes != depois):
-            print("AAAAAAAAAAAAAAAAAAAAAAAA")
+        #ESPALHAMENTO DE GENES
+        #espalha_genes_elitismo(individuos,geracao)
+        if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
+            antes = individuos[0]
+            for individuo in individuos[1:-1*N_PREDADOS]:
+                individuo.cruzamento(individuos[0])
+            depois = individuos[0]
+            if(antes != depois):
+                print("AAAAAAAAAAAAAAAAAAAAAAAA")
+            
+            #predacao randomica
+            for individuo in individuos[-1*N_PREDADOS:]:
+                individuo.reset_genes()
+        else:
+            antes = individuos[0]
+            for individuo in individuos[1:]:
+                individuo.cruzamento(individuos[0])
+            depois = individuos[0]
+            if(antes != depois):
+                print("AAAAAAAAAAAAAAAAAAAAAAAA")
         
         geracao += 1
     
