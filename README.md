@@ -34,7 +34,7 @@ Além disso, todos os novos indivíduos sofrem uma mutação em seus genes de ac
 Após testes, algumas técnicas especiais foram utilizadas para melhorar o algoritmo.
 
 ### Mutação Variável
-A taxa de mutação não permanece a mesma durante toda a execucação do algoritmo, mas varia, com isso obtemos simultaneamente os benefícios de uma taxa de mutação pequena, que é melhororar a convergência da solução, e os de uma taxa mais alta, que aumenta a diversidade, permitindo escapar de mínimos locais. 
+A taxa de mutação não permanece a mesma durante toda a execucação do algoritmo, mas varia, com isso obtemos simultaneamente os benefícios de uma taxa de mutação pequena, que é melhorar a convergência da solução, e os de uma taxa mais alta, que aumenta a diversidade, permitindo escapar de mínimos locais. 
 
 ### Genocídio
 Caso a população passe muitas gerações sem melhoria, todo os indivíduos, com exceção do melhor, são substituídos por indivíduos aleatórios, aumentando a diversidade da população.
