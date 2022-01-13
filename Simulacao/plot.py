@@ -1,18 +1,5 @@
 import matplotlib.pyplot as plt
-import numpy as np
-
-def plot_graph(temps, pot, N_MEDIDAS, Kp, Ki, Kd, set_point):
-    # Data for plotting
-    t = np.linspace(0, N_MEDIDAS//2, N_MEDIDAS)
-
-    plt.plot(t, temps, label = 'temp', color='tab:red')
-    plt.title('Kp = {}, Ki = {}, Kd = {}, Setpoint = {}'.format(Kp, Ki, Kd, set_point))
-
-    plt.plot(t, pot, label = 'pot', color='tab:blue')
-
-    plt.tight_layout()
-    plt.legend()
-    plt.show()
+import os
 
 def plot_fitness(fit, fitavg):
     plt.plot(fit, label = 'fit_best', color='tab:red')
@@ -22,3 +9,19 @@ def plot_fitness(fit, fitavg):
     plt.tight_layout()
     plt.legend()
     plt.show()
+
+def plot_params_from_log():
+    individuos = []
+    logs = os.listdir('logs/')
+    if(len(logs) > 0):
+        logs.sort()
+        for log in logs:
+            log = open("logs/" + str(log), "r")
+            for linha in log:
+                data = linha.rstrip()
+                data = data.split(',')
+                individuos.append((float(data[0]), float(data[1]), float(data[2])))
+                break
+
+        plt.plot(individuos)
+        plt.show()

@@ -3,35 +3,20 @@
 import numpy as np # Acho que da pra substituir
 import matplotlib.pyplot as plt # Plot - nao_precisa
 from scipy.integrate import odeint # EDO - precisa
-import time
-from numba import njit, jit
+from numba import jit
 
 NOISE = True
 SET_POINT = 80
 OUTPUT_LIMIT = 255
 TEMP_LIMIT = 200
 
-'''t_model = None #substitui self.t
-Gain_model = None #substitui self.Gain
-TimeConstant_model = None #substitui self.TimeConstant
-DeadTime_model = None #substitui self.DeadTime
-Bias_model = None #substitui self.Bias
-CV_model = None #substitui self.CV'''
-
-@jit #jit parece mais rapido, testar mais dps
+@jit
 def calc(PV,ts, t_model_local, CV_model_local):
-    #print(t_model, DeadTime_model, Bias_model, Gain_model)
-    #time.sleep(1)
-    #global t_model, DeadTime_model, Bias_model, Gain_model, TimeConstant_model, CV_model
     if (t_model_local-DeadTime_model) <= 0:
         um=0
     else:
         um=CV_model_local[t_model_local-int(DeadTime_model)]
-    #print(PV, ts, t_model_local, t_model, um)
-    #print(CV_model_local)
-    #print(type(t_model_local))
     dydt = (-(PV-Bias_model) + Gain_model * um)/TimeConstant_model
-    #print(dydt)
     return dydt
 
 def _clamp(value, limits):
@@ -72,7 +57,6 @@ class PID(object):
 
         self.reset()
 
-
     def __call__(self,PV=0,SP=0):
             # PID calculations            
             #P term
@@ -102,7 +86,6 @@ class PID(object):
 
             return CV
         
-
     @property
     def components(self):
 
@@ -174,7 +157,6 @@ def refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH = Fal
     iterm = np.zeros(len(t))
     dterm = np.zeros(len(t))
     noise=np.resize(noise, len(t))
-    #noise= np.zeros(len(t)) #no noise
     
     #defaults
     ibias=10
@@ -223,8 +205,7 @@ def refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH = Fal
             pterm[i]=pterm[i-1]
             iterm[i]=iterm[i-1]
             dterm[i]=dterm[i-1]
-            
-    #Display itae value
+    
     if(PLOT_GRAPH):
         plt.figure()    
         plt.subplot(2, 1, 1) 

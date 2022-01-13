@@ -1,6 +1,5 @@
-from random import uniform, choices, choice
+from random import uniform, choices, seed
 import controle
-from dataclasses import dataclass, field
 import os
 import time
 import multiprocessing as mp
@@ -11,10 +10,10 @@ import plot
 ## POPULACAO
 NUMERO_DE_INDIVIDUOS_POR_THREAD = 10
 MUTACAO = None #%
-TAXAS_MUTACAO = [0.25, 0.15, 0.05, 1, 5, 10, 20] #%
+TAXAS_MUTACAO = [0.25, 0.15, 0.05, 1, 5, 10] #%
 #TAXAS_MUTACAO = 6*[0.25] #caso queira mutação fixa
 LIMITE_CONTADOR = 50 #depois de quantas geracoes sem melhoria alterar a taxa de mut
-N_CICLOS_MUT = 4
+N_CICLOS_MUT = 10
 CHANCE_MUT = 1
 TEM_GENOCIDIO = True
 DELTA = 0.01
@@ -37,7 +36,9 @@ PRECISAO = 3  #CASAS DECIMAIS DE PRECISAO
 ## TESTE
 N_MEDIDAS = 600 #Arduino
 N_SEGUNDOS = 100 #Simulacao
-RECUPERA_LOG = True
+RECUPERA_LOG = False
+LOGGING = False
+NUMERO_GERACOES_LOG = 50 #numero de geracoes entre logs
 
 ## MULTITHREADING
 NUMERO_DE_THREADS = 4
@@ -132,23 +133,15 @@ def inicializa_populacao():
 
 def espalha_genes_elitismo(individuos, geracao):
     if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
-        antes = individuos[0]
         for individuo in individuos[1:-1*N_PREDADOS]:
             individuo.cruzamento(individuos[0])
-        depois = individuos[0]
-        if(antes != depois):
-            print("AAAAAAAAAAAAAAAAAAAAAAAA")
         
         #predacao randomica
         for individuo in individuos[-1*N_PREDADOS:]:
             individuo.reset_genes()
     else:
-        antes = individuos[0]
         for individuo in individuos[1:]:
             individuo.cruzamento(individuos[0])
-        depois = individuos[0]
-        if(antes != depois):
-            print("AAAAAAAAAAAAAAAAAAAAAAAA")
 
 def genocidio(individuos):
     for individuo in individuos[1:]:
@@ -164,15 +157,6 @@ def multithread_fitness(inicio, fim, individuos):
 
 
 if __name__ == "__main__":
-    
-    #for i in range(1):
-    #    #print(controle.FOPDT_test_tuning(10, 0.5, 0.3, N_SEGUNDOS))  
-    #    print(controle.FOPDT_test_tuning(10, 0.5, 0, N_SEGUNDOS))  
-    #exit()
-
-    #plot.plot_fitness([1,2,3,4,5], [1,2,3,3,4])
-    #exit()
-
     individuos, geracao = inicializa_populacao()
 
     threads = [None]*NUMERO_DE_THREADS
@@ -190,8 +174,6 @@ if __name__ == "__main__":
     plot_avgfit = []
 
     while(True):
-        #print("main - ", individuos[0].Kp, individuos[0].Ki, individuos[0].Kd)
-        #print(geracao)
 
         args = []
         for i in range(NUMERO_DE_THREADS):
@@ -208,9 +190,9 @@ if __name__ == "__main__":
         plot_avgfit.append(1/(np.average([ind.fitness for ind in individuos])))
 
         #LOGS
-        if(geracao%50 == 0):
+        if(LOGGING and geracao%NUMERO_GERACOES_LOG == 0):
             fim = time.time()
-            print("Tempo: ", fim - inicio)
+            #print("Tempo: ", fim - inicio)
             inicio = time.time()
             escreve_log(geracao, individuos)
 
@@ -219,7 +201,7 @@ if __name__ == "__main__":
         if(abs(individuos[0].fitness - old_best) <= DELTA):
             contador += 1
         else: #se melhorou
-            print("melhorou na geracao {} :) - mut = {}%".format(geracao, MUTACAO))
+            #print("melhorou na geracao {} :) - mut = {}%".format(geracao, MUTACAO))
             contador = 0
             index_mut = 0
             MUTACAO = TAXAS_MUTACAO[index_mut]
@@ -239,28 +221,28 @@ if __name__ == "__main__":
         old_best = individuos[0].fitness
 
         #ESPALHAMENTO DE GENES
-        #espalha_genes_elitismo(individuos,geracao)
         if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
-            antes = individuos[0]
             for individuo in individuos[1:-1*N_PREDADOS]:
                 individuo.cruzamento(individuos[0])
-            depois = individuos[0]
-            if(antes != depois):
-                print("AAAAAAAAAAAAAAAAAAAAAAAA")
             
             #predacao randomica
             for individuo in individuos[-1*N_PREDADOS:]:
                 individuo.reset_genes()
         else:
-            antes = individuos[0]
             for individuo in individuos[1:]:
                 individuo.cruzamento(individuos[0])
-            depois = individuos[0]
-            if(antes != depois):
-                print("AAAAAAAAAAAAAAAAAAAAAAAA")
         
+        #PARA O PLOT DO QUAO RAPIDO CONVERGE
+        if(abs(individuos[0].fitness - 56.2869476) < DELTA):
+            print("PAROU NA ", geracao)
+            break
+
         geracao += 1
-    
+
+        if(geracao == 100):
+            break
+
     plot.plot_fitness(plot_fit, plot_avgfit)
+    plot.plot_params_from_log()
     escreve_log(geracao, individuos)
     exit()

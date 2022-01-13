@@ -55,7 +55,6 @@ def nota_tecnica(temps, pot, set_point):
     e6 = reversao_pot(pot)
     e7 = erro_final(temps, set_point)
     e8 = gasto_pot(pot)
-    #print("{}, {}, {}, {}, {}, {}, {}, {}".format(e1,e2,e3,e4,e5,e6,e7,e8))
     return (0*e1 + 
             e2 + 
             2*e3 + 

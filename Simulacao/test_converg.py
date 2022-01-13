@@ -1,0 +1,11 @@
+import os
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
+os.system("main.py")
