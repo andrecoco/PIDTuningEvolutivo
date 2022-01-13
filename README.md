@@ -49,6 +49,6 @@ São requisitos as seguintes bibliotecas de Python:
 - Numba
 - Matplotlib
 
-Os parâmetros relacionados a evolução podem ser alterados no início do código do arquivo ```main.py```.
+Os parâmetros relacionados à evolução podem ser alterados no início do código do arquivo ```main.py```.
 
 A pasta SerialEvo contém os arquivos para evolução utilizando o Arduino, e a pasta Simulacao contém os arquivos utilizando a simulação.
