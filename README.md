@@ -12,7 +12,7 @@ Esse projeto é relativo à disciplina de Sistemas Evolutivos e Aplicados à Rob
 ## Explicando o problema
 Um controle PID é um sistema de controle que reune as ações proporcional, integral e derivativa. A componente proporcional é responsável por diminuir o erro, a integral por zerar o erro em regime permanente, e a derivativa atua considerando a taxa da variação do erro.
 
-A ideia do algoritmo era encontrar uma sintonia para um sistema composto por uma lâmpada incandescente, uma ventoinha e um sensor de temperatura. Porém devido a necessidade de se testar diversas sintonias em pouco tempo, resolvemos então utilizar uma simulação, modelando o sistema como um FODPT (First Order plus Dead Time).
+A ideia do algoritmo é encontrar uma sintonia para um sistema composto por uma lâmpada incandescente, uma ventoinha e um sensor de temperatura. Porém devido a necessidade de se testar diversas sintonias em pouco tempo, resolvemos então utilizar uma simulação, modelando o sistema como um FODPT (First Order plus Dead Time).
 
 O código responsável pela simulação foi baseado nesse repositório: https://github.com/Destination2Unknown/PythonPID_Simulator
 
