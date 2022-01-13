@@ -49,13 +49,10 @@ void loop()
 }
 
 void print_info(){
-  //Serial.print("Setpoint=");
   Serial.print(",");
   Serial.print(Setpoint);
-  //Serial.print(" Temperatura=");
   Serial.print(",");
   Serial.print(Input);
-  //Serial.print(" PotenciaLampada=");
   Serial.print(",");
   Serial.println(Output);
 }
@@ -76,15 +73,6 @@ void get_arduino_params(){
       Ki = String(strtok(NULL, ",")).toDouble();
       Kd = String(strtok(NULL, ",")).toDouble();
       numero_medidas = String(strtok(NULL, ",")).toInt();
-      /*//Serial.print("Kp=");
-      //Serial.print(",");
-      Serial.print(Kp);
-      //Serial.print(" Ki=");
-      Serial.print(",");
-      Serial.print(Ki);
-      //Serial.print(" Kd=");
-      Serial.print(",");
-      Serial.println(Kd);*/
       tuned = true;
     }
   }
@@ -98,13 +86,6 @@ float get_temp(bool media_movel){
   for(int i = 0; i < n_temp_read; i++){
     sum += analogRead(PIN_INPUT);
   }
-  /*if(media_movel and 1 == 0){
-    temp_array[0] = temp_array[1];
-    temp_array[1] = temp_array[2];
-    medida = 100 * (sum/n_temp_read) * volt_ref / 1024.0;
-    temp_array[2] = medida;
-    return (temp_array[0] + temp_array[1] + temp_array[2])/3;
-  }*/
   return  100 * (sum/n_temp_read) * volt_ref / 1024.0;
 }
 
@@ -116,8 +97,6 @@ void setup_PID(){
   while(Input < initial_temp){
     delay(200);
     Input = get_temp(false);
-    //Serial.print("Esquentando... Temperatura=");
-    //Serial.println(Input);
   }
   analogWrite(PIN_OUTPUT, 0);
 
@@ -126,8 +105,6 @@ void setup_PID(){
   while(Input > initial_temp){
     delay(200);
     Input = get_temp(false);
-    //Serial.print("Esfriando... Temperatura=");
-    //Serial.println(Input);
   }
   analogWrite(PIN_FAN, 0);
   
