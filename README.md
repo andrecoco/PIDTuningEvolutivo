@@ -40,7 +40,7 @@ A taxa de mutação não permanece a mesma durante toda a execucação do algori
 Caso a população passe muitas gerações sem melhoria, todo os indivíduos, com exceção do melhor, são substituídos por indivíduos aleatórios, aumentando a diversidade da população.
 
 ### Predação Randômica
-Periodicamente, os piores indivíduos de cada geração são substitúidos por indivíduos aleatórios, aumentando a diversidade da população.
+Periodicamente, os piores indivíduos de cada geração são substituídos por indivíduos aleatórios, aumentando a diversidade da população.
 
 ## Instruções de Execução
 São requisitos as seguintes bibliotecas de Python:
