@@ -52,3 +52,9 @@ São requisitos as seguintes bibliotecas de Python:
 Os parâmetros relacionados à evolução podem ser alterados no início do código do arquivo ```main.py```.
 
 A pasta SerialEvo contém os arquivos para evolução utilizando o Arduino, e a pasta Simulacao contém os arquivos utilizando a simulação.
+
+## Por que Python?
+A linguagem Python não é conhecida pelo seu desempenho, algo importante em AG, principalmente se comparada a C/C++. 
+
+Porém escolhemos ela por conta da simulação da planta seguindo um modelo FODPT, que já utiliza algumas funções do Scipy que se aproveitam de código compilado para acelerar o processamento. Além disso utilizamos multiprocessing e JIT Compilation com o Numba, com o primeiro conseguimos em nossos testes aumentar em 4x o tamanho da população sem afetar o tempo total, e com o segundo aumentamos em 2-3x o desempenho total do programa.
+
