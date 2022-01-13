@@ -127,26 +127,6 @@ def inicializa_populacao():
             individuos.append(novo_indiv)
     return individuos, geracao
 
-def espalha_genes_elitismo(individuos, geracao):
-    if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
-        antes = individuos[0]
-        for individuo in individuos[1:-1*N_PREDADOS]:
-            individuo.cruzamento(individuos[0])
-        depois = individuos[0]
-        if(antes != depois):
-            print("AAAAAAAAAAAAAAAAAAAAAAAA")
-        
-        #predacao randomica
-        for individuo in individuos[-1*N_PREDADOS:]:
-            individuo.reset_genes()
-    else:
-        antes = individuos[0]
-        for individuo in individuos[1:]:
-            individuo.cruzamento(individuos[0])
-        depois = individuos[0]
-        if(antes != depois):
-            print("AAAAAAAAAAAAAAAAAAAAAAAA")
-
 def genocidio(individuos):
     for individuo in individuos[1:]:
         individuo.reset_genes()
@@ -210,25 +190,16 @@ if __name__ == "__main__":
         old_best = individuos[0].fitness
 
         #ESPALHAMENTO DE GENES
-        #espalha_genes_elitismo(individuos,geracao)
         if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
-            antes = individuos[0]
             for individuo in individuos[1:-1*N_PREDADOS]:
                 individuo.cruzamento(individuos[0])
-            depois = individuos[0]
-            if(antes != depois):
-                print("AAAAAAAAAAAAAAAAAAAAAAAA")
             
             #predacao randomica
             for individuo in individuos[-1*N_PREDADOS:]:
                 individuo.reset_genes()
         else:
-            antes = individuos[0]
             for individuo in individuos[1:]:
                 individuo.cruzamento(individuos[0])
-            depois = individuos[0]
-            if(antes != depois):
-                print("AAAAAAAAAAAAAAAAAAAAAAAA")
         
         geracao += 1
     
