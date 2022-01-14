@@ -239,9 +239,6 @@ if __name__ == "__main__":
 
         geracao += 1
 
-        if(geracao == 100):
-            break
-
     plot.plot_fitness(plot_fit, plot_avgfit)
     plot.plot_params_from_log()
     escreve_log(geracao, individuos)
