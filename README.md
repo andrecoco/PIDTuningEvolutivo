@@ -46,6 +46,8 @@ Caso a população passe muitas gerações sem melhoria, todo os indivíduos, co
 ### Predação Randômica
 Periodicamente, os piores indivíduos de cada geração são substituídos por indivíduos aleatórios, aumentando a diversidade da população.
 
+![plot_fitness](https://user-images.githubusercontent.com/16878985/149593254-933c2af4-2b2f-4a5e-b5d1-db272b65ff9c.png)
+
 ## Instruções de Execução
 São requisitos as seguintes bibliotecas de Python:
 - Numpy
