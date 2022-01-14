@@ -4,40 +4,43 @@ import os
 import numpy as np
 import plot
 
-# DEFINES
+### CONFIGURACOES DO CODIGO ###
 ## POPULACAO
 NUMERO_DE_INDIVIDUOS_POR_THREAD = 5
-MUTACAO = None #%
-TAXAS_MUTACAO = [0.25, 1] #%
-#TAXAS_MUTACAO = 6*[0.25] #caso queira mutação fixa
-LIMITE_CONTADOR = 10 #depois de quantas geracoes sem melhoria alterar a taxa de mut
-N_CICLOS_MUT = 4
-CHANCE_MUT = 1
-TEM_GENOCIDIO = True
-DELTA = 0.01
-TEM_PREDACAO_RANDOMICA = True
-N_GERACOES_PREDACAO = 5 #numero de geracoes entre predacoes
-N_PREDADOS = 1 #numero de piores individuos que vao ser predados
+#TAXAS_MUTACAO = [0.25, 0.15, 0.05, 1, 5, 10] #%
+TAXAS_MUTACAO = 6*[1]           #descomentar essa linha caso queira mutacao fixa
+LIMITE_CONTADOR = 50            #depois de quantas geracoes sem melhoria alterar a taxa de mutacao
+N_CICLOS_MUT = 100              #numero de genocidios antes de parar o algoritmo
+CHANCE_MUT = 1                  #chance de se ocorrer mutacao em cada crossover
+TEM_GENOCIDIO = False           #define se o genocidio sera utilizado
+DELTA = 0.01                    #margem de erro do fitness para considerar que houve melhora
+TEM_PREDACAO_RANDOMICA = False #define se a predacao randomica sera utilizada
+N_GERACOES_PREDACAO = 10        #numero de geracoes entre predacoes
+N_PREDADOS = 5                  #numero de piores individuos que vao ser predados
 
 ## INDIVIDUO
-MAX_KP = 20
-MIN_KP = 0.1
-RANGE_KP = MAX_KP
-MAX_KI = 20
-MIN_KI = 0.1
-RANGE_KI = MAX_KI
-MAX_KD = 0
-MIN_KD = 0
-RANGE_KD = MAX_KD
-PRECISAO = 3  #CASAS DECIMAIS DE PRECISAO
+MAX_KP = 20                     #valor maximo para KP
+MIN_KP = 0.1                    #valor minimo para KP
+MAX_KI = 20                     #valor maximo para KI
+MIN_KI = 0.1                    #valor minimo para KI
+MAX_KD = 0                      #valor maximo para KD
+MIN_KD = 0                      #valor minimo para KD
+PRECISAO = 3                    #casas decimais de precisao
 
-## TESTE
-N_MEDIDAS = 200 #Arduino
-N_SEGUNDOS = 100 #Simulacao
-RECUPERA_LOG = True
+## DEFINICOES DA SIMULACAO
+N_MEDIDAS = 200                 #tempo simulado
+RECUPERA_LOG = False            #define se a simulacao continua de onde parou (a partir dos logs)
+LOGGING = False                 #define se os logs com o estado das geracoes e escrito
+NUMERO_GERACOES_LOG = 50        #numero de geracoes entre logs
 
-## MULTITHREADING
+## MULTIPROCESSING
 NUMERO_DE_THREADS = 1
+
+### Algumas outras declaracoes (nao configuraveis)
+MUTACAO = None #%
+RANGE_KP = MAX_KP
+RANGE_KI = MAX_KI
+RANGE_KD = MAX_KD
 
 class Individuo:
     def __init__(self, *args) -> None:
@@ -58,6 +61,7 @@ class Individuo:
     def __str__(self) -> str:
         return "{},{},{},{}".format(self.Kp, self.Ki, self.Kd, self.fitness)
 
+    # realiza o cruzamento entre o individuo e um parceiro, alem da mutacao dos genes
     def cruzamento(self, parceiro):
         self.Kp = round((parceiro.Kp + self.Kp)/2 + choices([1, 0], [CHANCE_MUT, 1-CHANCE_MUT])[0]*uniform(-1*(MUTACAO/100)*RANGE_KP, (MUTACAO/100)*RANGE_KP), PRECISAO)
         self.Ki = round((parceiro.Ki + self.Ki)/2 + choices([1, 0], [CHANCE_MUT, 1-CHANCE_MUT])[0]*uniform(-1*(MUTACAO/100)*RANGE_KI, (MUTACAO/100)*RANGE_KI), PRECISAO)
@@ -78,28 +82,28 @@ class Individuo:
             self.Kd = MIN_KD
         elif(self.Kd > MAX_KD):
             self.Kd = MAX_KD
-        
+    
+    # substitui os genes por valores aleatorios
     def reset_genes(self):
         self.fitness = None
         self.Kp = round(uniform(MIN_KP, MAX_KP), PRECISAO)
         self.Ki = round(uniform(MIN_KI, MAX_KI), PRECISAO)
         self.Kd = round(uniform(MIN_KD, MAX_KD), PRECISAO)
 
-
-def test_fitness(individuo):
-    return (individuo.Kp + individuo.Ki + individuo.Kd)
-
+# funcao auxiliar usada para debug
 def print_bonito(array):
     for item in array:
         print(item)
     print()
 
+# escreve o arquivo de log
 def escreve_log(geracao, individuos):
     f = open("logs/" + str(geracao) + ".txt", "w")
     for individuo in individuos:
         f.write(str(individuo) + "\n")
     f.close()
 
+# recupera o ultimo arquivo de log para continuar a simulacao
 def recupera_log():
     logs = os.listdir('logs/')
     if(len(logs) > 0 and RECUPERA_LOG):
@@ -114,11 +118,12 @@ def recupera_log():
         return individuos, geracao + 1
     return None, None
 
+# inicializa a populacao do zero, ou a partir de um log antigo
 def inicializa_populacao():
     #Verifica se existem logs para continuar de onde parou
     individuos, geracao = recupera_log()
 
-    #Começa do zero
+    #comeca do zero
     if (individuos is None):
         individuos = []
         geracao = 0
@@ -127,6 +132,7 @@ def inicializa_populacao():
             individuos.append(novo_indiv)
     return individuos, geracao
 
+# substitui todos os individuos (com excecao do melhor) por aleatorios
 def genocidio(individuos):
     for individuo in individuos[1:]:
         individuo.reset_genes()
@@ -145,6 +151,7 @@ if __name__ == "__main__":
     plot_avgfit = []
 
     while(True):
+        # realiza o teste de fitness dos individuos
         print(geracao)
 
         if(geracao == 0):
@@ -157,16 +164,15 @@ if __name__ == "__main__":
 
         individuos.sort() #coloca o melhor na frente, para nao mata-lo
 
-        #PARA O PLOT
+        # armazena dados para o plot ao final
         plot_fit.append(1/(individuos[0].fitness))
         plot_avgfit.append(1/(np.average([ind.fitness for ind in individuos])))
 
-        #LOGS
+        # log
         if(geracao%10 == 0):
             escreve_log(geracao, individuos)
 
-        # MUTACAO DINAMICA
-        #ve se melhorou nas ultimas 2 geracoes
+        # mutacao dinamica e genocidio
         if(abs(individuos[0].fitness - old_best) <= DELTA):
             contador += 1
         else: #se melhorou
@@ -189,7 +195,7 @@ if __name__ == "__main__":
             break
         old_best = individuos[0].fitness
 
-        #ESPALHAMENTO DE GENES
+        # espalhamento dos genes
         if(TEM_PREDACAO_RANDOMICA and geracao%N_GERACOES_PREDACAO == 0):
             for individuo in individuos[1:-1*N_PREDADOS]:
                 individuo.cruzamento(individuos[0])

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+# realiza o plot da potencia e temperatura pelo tempo
 def plot_graph(temps, pot, N_MEDIDAS, Kp, Ki, Kd, set_point):
     # Data for plotting
     t = np.linspace(0, N_MEDIDAS//2, N_MEDIDAS)
@@ -11,7 +12,6 @@ def plot_graph(temps, pot, N_MEDIDAS, Kp, Ki, Kd, set_point):
     ax1.set_ylabel('temp', color=color)
     ax1.set(xlabel='tempo (s)',
         title='Kp = {}, Ki = {}, Kd = {}, Setpoint = {}'.format(Kp, Ki, Kd, set_point))
-    #ax1.set_ylim([50, 1.1*float(set_point)])
     ax1.grid()
 
     color = 'tab:blue'  
@@ -23,6 +23,7 @@ def plot_graph(temps, pot, N_MEDIDAS, Kp, Ki, Kd, set_point):
     plt.legend()
     plt.show()
 
+# realiza o plot da evolucao do fitness do melhor individuo e a media da populacao
 def plot_fitness(fit, fitavg):
     plt.plot(fit, label = 'fit_best', color='tab:red')
     plt.plot(fitavg, label = 'fit_avg', color='tab:orange')
