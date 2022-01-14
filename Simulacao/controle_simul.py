@@ -5,10 +5,15 @@ import matplotlib.pyplot as plt # Plot - nao_precisa
 from scipy.integrate import odeint # EDO - precisa
 from numba import jit
 
-NOISE = True
-SET_POINT = 80
-OUTPUT_LIMIT = 255
-TEMP_LIMIT = 200
+NOISE = True        # define se tem ruido
+SET_POINT = 80      # define o setpoint
+OUTPUT_LIMIT = 255  # valor maximo do output
+TEMP_LIMIT = 200    # valor maximo do input
+
+# modelo FOPDT
+GANHO = 0.42
+CONSTANTE_DE_TEMPO = 50 
+TEMPO_MORTO = 0.5
 
 @jit
 def calc(PV,ts, t_model_local, CV_model_local):
@@ -227,7 +232,7 @@ def refresh(ikp, iki, ikd, igain, itau, ideadtime, size, noise, PLOT_GRAPH = Fal
     return PV, CV, SP 
 
 #EntryPoint
-def FOPDT_SIMUL(ikp, iki, ikd, N_SEGUNDOS, igain = 0.42, itau = 50, ideadtime = 0.5):
+def FOPDT_SIMUL(ikp, iki, ikd, N_SEGUNDOS, igain = GANHO, itau = CONSTANTE_DE_TEMPO, ideadtime = TEMPO_MORTO):
     #Random Noise
     size = N_SEGUNDOS
     if(NOISE):
