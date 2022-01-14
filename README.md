@@ -9,6 +9,10 @@ Rodrigo Augusto Valeretto | 10684792
 ## Introdução
 Esse projeto é relativo à disciplina de Sistemas Evolutivos e Aplicados à Robótica (SSC0713) ministrada no segundo semestre do ano de 2021 pelo Prof. Dr. Eduardo do Valle Simões na Universidade de São Paulo.
 
+O projeto e o código são detalhados no vídeo abaixo.
+
+[![Link para o vídeo](https://img.youtube.com/vi/W_xRHc-kPz0/0.jpg)](https://www.youtube.com/watch?v=W_xRHc-kPz0)
+
 ## Explicando o problema
 Um controle PID é um sistema de controle que reune as ações proporcional, integral e derivativa em um único sistema. A componente proporcional é responsável por diminuir o erro; a integral, por zerar o erro em regime permanente; e a derivativa atua considerando a taxa da variação do erro.
 
